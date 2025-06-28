@@ -1094,32 +1094,33 @@
                             <div class="algorithm-info">
                                 <h4><i class="fas fa-microscope"></i> Analisis Bit LSB</h4>
                                 
-                                <div class="alert alert-warning">
-                                    <i class="fas fa-exclamation-triangle"></i>
-                                    <div>
-                                        <strong>Perhatian:</strong> Visualisasi LSB hanya efektif untuk gambar dengan kontras tinggi.
-                                        Untuk gambar dengan kontras rendah, pola LSB mungkin tidak terlihat jelas.
-                                        Nilai PSNR di atas 40 dB umumnya menunjukkan kualitas yang baik (perubahan tidak terlihat mata).
-                                    </div>
-                                </div>
-                                
-                                <div class="image-comparison">
-                                    <div class="image-preview">
-                                        <h4><i class="fas fa-image"></i> Bit LSB Gambar Asli</h4>
-                                        <img src="data:image/png;base64,${data.original_lsb}" alt="Original LSB">
-                                        <p>Visualisasi bit LSB: putih = 1, hitam = 0</p>
-                                    </div>
-                                    <div class="image-preview">
-                                        <h4><i class="fas fa-eye-slash"></i> Bit LSB Gambar Stego</h4>
-                                        <img src="data:image/png;base64,${data.stego_lsb}" alt="Stego LSB">
-                                        <p>Bit LSB berisi pesan rahasia</p>
-                                    </div>
-                                </div>
-                                
                                 <details>
                                     <summary style="cursor: pointer; padding: 15px; background: rgba(67, 97, 238, 0.1); border-radius: 10px; margin-top: 20px; font-weight: bold;">
                                         <i class="fas fa-table"></i> Lihat Contoh Perubahan Bit pada Pixel (Channel R)
                                     </summary>
+                
+                                    <div class="alert alert-warning">
+                                        <i class="fas fa-exclamation-triangle"></i>
+                                        <div>
+                                            <strong>Perhatian:</strong> Visualisasi LSB hanya efektif untuk gambar dengan kontras tinggi.
+                                            Untuk gambar dengan kontras rendah, pola LSB mungkin tidak terlihat jelas.
+                                            Nilai PSNR di atas 40 dB umumnya menunjukkan kualitas yang baik (perubahan tidak terlihat mata).
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="image-comparison">
+                                        <div class="image-preview">
+                                            <h4><i class="fas fa-image"></i> Bit LSB Gambar Asli</h4>
+                                            <img src="data:image/png;base64,${data.original_lsb}" alt="Original LSB">
+                                            <p>Visualisasi bit LSB: putih = 1, hitam = 0</p>
+                                        </div>
+                                        <div class="image-preview">
+                                            <h4><i class="fas fa-eye-slash"></i> Bit LSB Gambar Stego</h4>
+                                            <img src="data:image/png;base64,${data.stego_lsb}" alt="Stego LSB">
+                                            <p>Bit LSB berisi pesan rahasia</p>
+                                        </div>
+                                    </div>
+                                
                                     <div class="message-result" style="margin-top: 15px;">
                                         <table style="width:100%; border-collapse: collapse; margin-top: 10px;">
                                             <thead>
