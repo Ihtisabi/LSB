@@ -1,0 +1,1316 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced LSB Steganography</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            min-height: 100vh;
+            padding: 20px;
+            position: relative;
+            overflow-x: hidden;
+            color: #334155;
+        }
+
+        body::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect width="2" height="2" fill="%234361ee" opacity="0.1"/></svg>');
+            z-index: -1;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 30px auto;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 20px;
+            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            position: relative;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(226, 232, 240, 0.8);
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4361ee 0%, #3a0ca3 100%);
+            color: white;
+            padding: 50px 40px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: "";
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 70%);
+            z-index: 0;
+        }
+
+        .header-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            font-weight: 800;
+            margin-bottom: 20px;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+            background: linear-gradient(45deg, #ffffff, #e0e7ff);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: textGlow 3s ease-in-out infinite alternate;
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            font-weight: 400;
+            max-width: 700px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        .algorithm-badge {
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.3);
+            padding: 10px 25px;
+            border-radius: 50px;
+            margin-top: 25px;
+            font-size: 1rem;
+            font-weight: 600;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .main-content {
+            padding: 40px;
+        }
+
+        .mode-selector {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 40px;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .mode-btn {
+            padding: 16px 32px;
+            border: none;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            background: rgba(241, 245, 249, 0.8);
+            color: #475569;
+            border: 2px solid #e2e8f0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+        }
+
+        .mode-btn::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 0;
+            height: 100%;
+            background: linear-gradient(45deg, #4361ee, #3a0ca3);
+            transition: width 0.4s ease;
+            z-index: -1;
+        }
+
+        .mode-btn:hover {
+            color: white;
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(67, 97, 238, 0.2);
+            border-color: #4361ee;
+        }
+
+        .mode-btn:hover::before {
+            width: 100%;
+        }
+
+        .mode-btn.active {
+            background: linear-gradient(45deg, #4361ee, #3a0ca3);
+            color: white;
+            border-color: #4361ee;
+            box-shadow: 0 10px 25px rgba(67, 97, 238, 0.2);
+        }
+
+        .mode-btn i {
+            font-size: 1.4rem;
+        }
+
+        .section {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .section.active {
+            display: block;
+        }
+        
+        .image-preview-container {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+            perspective: 1000px;
+        }
+        
+        .preview-image {
+            max-width: 320px;
+            max-height: 220px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            border: 2px solid #4361ee;
+            transform: rotateY(0deg);
+            transition: transform 0.5s ease;
+        }
+
+        .preview-image:hover {
+            transform: rotateY(10deg);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes textGlow {
+            0% { text-shadow: 0 0 5px rgba(255,255,255,0.3); }
+            100% { text-shadow: 0 0 20px rgba(67, 97, 238, 0.6), 0 0 30px rgba(76, 201, 240, 0.4); }
+        }
+
+        .upload-area {
+            border: 2px dashed #cbd5e1;
+            border-radius: 20px;
+            padding: 50px 20px;
+            text-align: center;
+            background: rgba(255, 255, 255, 0.7);
+            transition: all 0.4s ease;
+            cursor: pointer;
+            margin-bottom: 30px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .upload-area::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, rgba(67, 97, 238, 0.05), rgba(58, 12, 163, 0.05));
+            z-index: 0;
+        }
+
+        .upload-area-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .upload-area:hover {
+            border-color: #6366f1;
+            background: rgba(255, 255, 255, 0.9);
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+        }
+
+        .upload-area.dragover {
+            border-color: #6366f1;
+            background: rgba(67, 97, 238, 0.1);
+        }
+
+        .upload-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            color: #6366f1;
+            text-shadow: 0 0 15px rgba(99, 102, 241, 0.3);
+        }
+
+        .upload-area h3 {
+            color: #1e293b;
+            font-size: 1.6rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+        }
+
+        .upload-area p {
+            color: #64748b;
+            font-size: 1.1rem;
+            max-width: 600px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        .form-group {
+            margin-bottom: 30px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 15px;
+            font-weight: 600;
+            color: #1e293b;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 18px 25px;
+            border: 2px solid #e2e8f0;
+            border-radius: 15px;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.8);
+            color: #334155;
+            box-shadow: inset 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #6366f1;
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1), inset 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        textarea.form-control {
+            resize: vertical;
+            min-height: 150px;
+            line-height: 1.6;
+        }
+
+        .btn {
+            padding: 18px 35px;
+            border: none;
+            border-radius: 50px;
+            font-size: 1.2rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+            margin-top: 20px;
+            background: linear-gradient(45deg, #4361ee, #3a0ca3);
+            color: white;
+            box-shadow: 0 10px 25px rgba(67, 97, 238, 0.2);
+        }
+
+        .btn::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 0;
+            height: 100%;
+            background: linear-gradient(45deg, #3a0ca3, #4361ee);
+            transition: width 0.4s ease;
+            z-index: -1;
+        }
+
+        .btn:hover::before {
+            width: 100%;
+        }
+
+        .btn:hover {
+            transform: translateY(-5px) scale(1.03);
+            box-shadow: 0 15px 30px rgba(67, 97, 238, 0.3);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none !important;
+            box-shadow: none !important;
+        }
+
+        .btn i {
+            font-size: 1.5rem;
+        }
+
+        .result-section {
+            margin-top: 50px;
+            padding: 40px;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 20px;
+            border: 1px solid rgba(226, 232, 240, 0.8);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+            animation: slideUp 0.6s ease;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .result-section h3 {
+            color: #1e293b;
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .image-comparison {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            margin: 40px 0;
+        }
+
+        .image-preview {
+            text-align: center;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 15px;
+            padding: 25px;
+            border: 1px solid #e2e8f0;
+            transition: all 0.4s ease;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            perspective: 1000px;
+        }
+
+        .image-preview:hover {
+            transform: translateY(-10px) rotateY(5deg);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+            border-color: #4361ee;
+        }
+
+        .image-preview h4 {
+            margin-bottom: 20px;
+            color: #1e293b;
+            font-size: 1.3rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .image-preview img {
+            max-width: 100%;
+            max-height: 280px;
+            border-radius: 12px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+            border: 2px solid #e2e8f0;
+        }
+
+        .download-btn {
+            background: linear-gradient(45deg, #4cc9f0, #4361ee);
+            color: white;
+            margin-top: 20px;
+            padding: 12px 25px;
+            font-size: 1.1rem;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            border-radius: 50px;
+            font-weight: 600;
+            box-shadow: 0 8px 20px rgba(76, 201, 240, 0.2);
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+        }
+
+        .download-btn:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 25px rgba(76, 201, 240, 0.3);
+            background: linear-gradient(45deg, #4361ee, #4cc9f0);
+        }
+
+        .message-result {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 30px;
+            border-radius: 15px;
+            border: 2px solid rgba(226, 232, 240, 0.8);
+            margin-top: 30px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .message-result h4 {
+            color: #4361ee;
+            margin-bottom: 20px;
+            font-size: 1.4rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .message-result p {
+            color: #334155;
+            font-size: 1.2rem;
+            line-height: 1.7;
+            word-wrap: break-word;
+            background: rgba(241, 245, 249, 0.7);
+            padding: 20px;
+            border-radius: 12px;
+            font-family: 'Courier New', monospace;
+            border: 1px solid #e2e8f0;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 50px;
+            color: #4361ee;
+        }
+
+        .spinner {
+            width: 60px;
+            height: 60px;
+            border: 5px solid rgba(67, 97, 238, 0.1);
+            border-top: 5px solid #4361ee;
+            border-radius: 50%;
+            animation: spin 1.2s linear infinite;
+            margin: 0 auto 30px;
+        }
+
+        .loading h4 {
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+        }
+
+        .loading p {
+            color: #64748b;
+            font-size: 1.1rem;
+            max-width: 500px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .alert {
+            padding: 20px 25px;
+            border-radius: 15px;
+            margin: 25px 0;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            animation: fadeIn 0.4s ease-out;
+            backdrop-filter: blur(5px);
+            border: 1px solid transparent;
+        }
+
+        .alert-danger {
+            background: rgba(220, 38, 38, 0.1);
+            color: #dc2626;
+            border-color: rgba(220, 38, 38, 0.1);
+        }
+
+        .alert-success {
+            background: rgba(34, 197, 94, 0.1);
+            color: #22c55e;
+            border-color: rgba(34, 197, 94, 0.1);
+        }
+
+        .alert-warning {
+            background: rgba(234, 179, 8, 0.1);
+            color: #ca8a04;
+            border-color: rgba(234, 179, 8, 0.1);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 25px;
+            margin: 40px 0;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 25px;
+            border-radius: 15px;
+            border: 1px solid #e2e8f0;
+            text-align: center;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-8px);
+            border-color: #4361ee;
+            box-shadow: 0 12px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .stat-value {
+            font-size: 2.2rem;
+            font-weight: 800;
+            color: #4361ee;
+            margin-bottom: 10px;
+            text-shadow: 0 0 10px rgba(67, 97, 238, 0.1);
+        }
+
+        .stat-label {
+            color: #64748b;
+            font-size: 1.1rem;
+        }
+
+        .algorithm-info {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 20px;
+            padding: 35px;
+            margin: 40px 0;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+            animation: fadeIn 1s ease;
+        }
+
+        .algorithm-info h4 {
+            color: #1e293b;
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .algorithm-info p {
+            color: #334155;
+            line-height: 1.8;
+            font-size: 1.1rem;
+            margin-bottom: 25px;
+        }
+
+        .algorithm-steps {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin-top: 30px;
+        }
+
+        .step-card {
+            background: rgba(241, 245, 249, 0.8);
+            border-radius: 15px;
+            padding: 25px;
+            border: 1px solid #e2e8f0;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .step-card:hover {
+            transform: translateY(-8px);
+            border-color: #4361ee;
+            box-shadow: 0 12px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .step-card::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 5px;
+            height: 100%;
+            background: linear-gradient(to bottom, #4361ee, #3a0ca3);
+        }
+
+        .step-number {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(45deg, #4361ee, #3a0ca3);
+            color: white;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 40px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            font-size: 1.2rem;
+            box-shadow: 0 5px 15px rgba(67, 97, 238, 0.2);
+        }
+
+        .step-card h5 {
+            color: #1e293b;
+            font-size: 1.3rem;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .step-card p {
+            color: #64748b;
+            font-size: 1.1rem;
+            line-height: 1.7;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 30px;
+            color: #64748b;
+            font-size: 1rem;
+            border-top: 1px solid #e2e8f0;
+            background: rgba(255, 255, 255, 0.9);
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                padding: 30px 20px;
+            }
+            
+            .header h1 {
+                font-size: 2.2rem;
+            }
+            
+            .main-content {
+                padding: 30px 20px;
+            }
+            
+            .image-comparison {
+                grid-template-columns: 1fr;
+                gap: 30px;
+            }
+            
+            .mode-selector {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .upload-area {
+                padding: 30px 15px;
+            }
+            
+            .algorithm-steps {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="header-content">
+                <h1><i class="fas fa-lock"></i> Advanced LSB Steganography</h1>
+                <p>Teknik Menyembunyikan Pesan Rahasia dalam Gambar dengan Algoritma LSB dan Enkripsi AES-256</p>
+                <div class="algorithm-badge">
+                    <i class="fas fa-shield-alt"></i> Teknologi Steganografi & Kriptografi Tingkat Lanjut
+                </div>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div class="algorithm-info">
+                <h4><i class="fas fa-brain"></i> Algoritma LSB Steganography</h4>
+                <p>Least Significant Bit (LSB) adalah teknik steganografi yang menyembunyikan data dengan mengganti bit terakhir (least significant) dari setiap pixel gambar. Metode ini sangat efektif karena perubahan pada LSB hampir tidak terlihat oleh mata manusia, namun dapat menyimpan informasi rahasia secara aman.</p>
+                
+                <div class="algorithm-steps">
+                    <div class="step-card">
+                        <div class="step-number">1</div>
+                        <h5><i class="fas fa-key"></i> Enkripsi Pesan</h5>
+                        <p>Pesan dienkripsi menggunakan AES-256 dengan mode CBC. Password di-hash menggunakan SHA-256 untuk menghasilkan kunci enkripsi yang aman.</p>
+                    </div>
+                    <div class="step-card">
+                        <div class="step-number">2</div>
+                        <h5><i class="fas fa-image"></i> Penyisipan ke Gambar</h5>
+                        <p>Setiap bit pesan terenkripsi disisipkan ke bit terakhir dari komponen warna RGB setiap pixel gambar menggunakan teknik LSB.</p>
+                    </div>
+                    <div class="step-card">
+                        <div class="step-number">3</div>
+                        <h5><i class="fas fa-search"></i> Ekstraksi Pesan</h5>
+                        <p>Proses ekstraksi membaca bit LSB dari gambar, menggabungkannya menjadi pesan terenkripsi, lalu mendekripsinya menggunakan password yang benar.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mode-selector">
+                <button class="mode-btn active" onclick="switchMode('hide')">
+                    <i class="fas fa-eye-slash"></i> Sembunyikan Pesan
+                </button>
+                <button class="mode-btn" onclick="switchMode('extract')">
+                    <i class="fas fa-eye"></i> Ekstrak Pesan
+                </button>
+            </div>
+
+            <!-- Hide Message Section -->
+            <div id="hide-section" class="section active">
+                <div class="upload-area" onclick="document.getElementById('hideImageInput').click()" 
+                     ondrop="handleDrop(event, 'hide')" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)">
+                    <div class="upload-area-content">
+                        <div class="upload-icon">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                        </div>
+                        <h3>Pilih Gambar untuk Proses LSB</h3>
+                        <p>Drag & drop atau klik untuk memilih gambar (PNG, JPG, JPEG) dengan ukuran maksimal 5MB</p>
+                        <input type="file" id="hideImageInput" accept="image/*" style="display: none;" onchange="handleImageSelect(this, 'hide')">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="secretMessage">
+                        <i class="fas fa-comment-dots"></i> Pesan Rahasia:
+                    </label>
+                    <textarea id="secretMessage" class="form-control" placeholder="Masukkan pesan yang ingin disembunyikan menggunakan algoritma LSB..." rows="4" oninput="updateCapacity()"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="password">
+                        <i class="fas fa-lock"></i> Password Enkripsi (Opsional):
+                    </label>
+                    <input type="password" id="password" class="form-control" placeholder="Password untuk keamanan tambahan (AES-256)">
+                </div>
+
+                <div id="capacity-info" class="stats-grid" style="display: none;">
+                    <div class="stat-card">
+                        <div class="stat-value" id="message-chars">0</div>
+                        <div class="stat-label">Karakter Pesan</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="image-capacity">0</div>
+                        <div class="stat-label">Kapasitas Gambar</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="usage-percent">0%</div>
+                        <div class="stat-label">Penggunaan</div>
+                    </div>
+                </div>
+
+                <button class="btn" onclick="hideMessage()" id="hideBtn" disabled>
+                    <i class="fas fa-lock"></i> Proses LSB Steganografi
+                </button>
+            </div>
+
+            <!-- Extract Message Section -->
+            <div id="extract-section" class="section">
+                <div class="upload-area" onclick="document.getElementById('extractImageInput').click()" 
+                     ondrop="handleDrop(event, 'extract')" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)">
+                    <div class="upload-area-content">
+                        <div class="upload-icon">
+                            <i class="fas fa-search"></i>
+                        </div>
+                        <h3>Pilih Gambar untuk Ekstraksi LSB</h3>
+                        <p>Upload gambar yang berisi pesan tersembunyi dengan algoritma LSB (format PNG direkomendasikan)</p>
+                        <input type="file" id="extractImageInput" accept="image/*" style="display: none;" onchange="handleImageSelect(this, 'extract')">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="extractPassword">
+                        <i class="fas fa-key"></i> Password Dekripsi (Jika Ada):
+                    </label>
+                    <input type="password" id="extractPassword" class="form-control" placeholder="Masukkan password jika pesan dienkripsi">
+                </div>
+
+                <button class="btn" onclick="extractMessage()" id="extractBtn" disabled>
+                    <i class="fas fa-unlock"></i> Ekstrak Pesan LSB
+                </button>
+            </div>
+
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <h4>Memproses Algoritma LSB</h4>
+                <p>Sedang menganalisis dan memodifikasi bit-bit pixel menggunakan teknik steganografi...</p>
+            </div>
+
+            <div id="results"></div>
+        </div>
+        
+        <div class="footer">
+            <p>© 2023 Advanced LSB Steganography | Teknik Penyembunyian Pesan Rahasia dengan Enkripsi AES-256</p>
+        </div>
+    </div>
+
+    <script>
+        let hideImage = null;
+        let extractImage = null;
+
+        function switchMode(mode) {
+            // Update button states
+            document.querySelectorAll('.mode-btn').forEach(btn => {
+                btn.classList.remove('active');
+                btn.style.transform = 'translateY(0)';
+            });
+            event.target.classList.add('active');
+            event.target.style.transform = 'translateY(-5px)';
+
+            // Show/hide sections
+            document.querySelectorAll('.section').forEach(section => {
+                section.classList.remove('active');
+                section.style.opacity = '0';
+            });
+            
+            const activeSection = document.getElementById(mode + '-section');
+            activeSection.classList.add('active');
+            setTimeout(() => {
+                activeSection.style.opacity = '1';
+            }, 10);
+
+            // Clear results
+            document.getElementById('results').innerHTML = '';
+        }
+
+        function handleDragOver(e) {
+            e.preventDefault();
+            e.currentTarget.classList.add('dragover');
+        }
+
+        function handleDragLeave(e) {
+            e.currentTarget.classList.remove('dragover');
+        }
+
+        function handleDrop(e, mode) {
+            e.preventDefault();
+            e.currentTarget.classList.remove('dragover');
+            
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                handleImageSelect({files: files}, mode);
+            }
+        }
+
+        function handleImageSelect(input, mode) {
+            const file = input.files[0];
+            if (!file) return;
+
+            // File size validation (max 5MB)
+            if (file.size > 5 * 1024 * 1024) {
+                showAlert('⚠️ Ukuran file terlalu besar! Maksimal 5MB.', 'danger');
+                return;
+            }
+
+            if (!file.type.startsWith('image/')) {
+                showAlert('⚠️ Harap pilih file gambar yang valid (PNG, JPG, JPEG)!', 'danger');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = new Image();
+                img.onload = function() {
+                    if (mode === 'hide') {
+                        hideImage = {
+                            data: e.target.result,
+                            img: img,
+                            file: file
+                        };
+                        document.getElementById('hideBtn').disabled = false;
+                        document.getElementById('capacity-info').style.display = 'grid';
+                        
+                        // Kosongkan pesan saat gambar baru dipilih
+                        document.getElementById('secretMessage').value = '';
+                        updateCapacity();
+                        
+                        // Tampilkan preview gambar di atas
+                        showImagePreview(e.target.result, 'hide');
+                        
+                        showAlert('✅ Gambar berhasil dimuat! Siap untuk proses LSB steganografi.', 'success');
+                    } else {
+                        extractImage = {
+                            data: e.target.result,
+                            img: img,
+                            file: file
+                        };
+                        document.getElementById('extractBtn').disabled = false;
+                        
+                        // Tampilkan preview gambar di atas
+                        showImagePreview(e.target.result, 'extract');
+                        
+                        showAlert('✅ Gambar berhasil dimuat! Siap untuk ekstraksi LSB.', 'success');
+                    }
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // Fungsi untuk menampilkan preview gambar di atas
+        function showImagePreview(imageData, mode) {
+            // Hapus preview sebelumnya jika ada
+            const existingPreview = document.querySelector(`#${mode}-section .image-preview-container`);
+            if (existingPreview) existingPreview.remove();
+            
+            // Buat container preview
+            const previewContainer = document.createElement('div');
+            previewContainer.className = 'image-preview-container';
+            
+            // Buat gambar preview
+            const previewImg = document.createElement('img');
+            previewImg.src = imageData;
+            previewImg.className = 'preview-image';
+            previewImg.alt = (mode === 'hide') ? 'Gambar untuk menyembunyikan pesan' : 'Gambar untuk ekstraksi pesan';
+            
+            // Tambahkan ke container
+            previewContainer.appendChild(previewImg);
+            
+            // Sisipkan di atas form
+            const formGroup = document.querySelector(`#${mode}-section .form-group`);
+            if (formGroup) {
+                formGroup.parentNode.insertBefore(previewContainer, formGroup);
+            }
+        }
+
+        function updateCapacity() {
+            if (!hideImage) return;
+            
+            const message = document.getElementById('secretMessage').value;
+            const messageChars = message.length;
+            const imageBits = hideImage.img.width * hideImage.img.height * 3; // RGB channels
+            const imageCapacity = Math.floor(imageBits / 8) - 2; // Reserve space for delimiter (2 bytes)
+            const usagePercent = Math.round((messageChars / imageCapacity) * 100);
+
+            document.getElementById('message-chars').textContent = messageChars;
+            document.getElementById('image-capacity').textContent = imageCapacity;
+            document.getElementById('usage-percent').textContent = usagePercent + '%';
+
+            // Update color based on usage
+            const usageElement = document.getElementById('usage-percent');
+            if (usagePercent > 90) {
+                usageElement.style.color = '#dc2626';
+            } else if (usagePercent > 70) {
+                usageElement.style.color = '#ca8a04';
+            } else {
+                usageElement.style.color = '#22c55e';
+            }
+        }
+
+        function hideMessage() {
+            const message = document.getElementById('secretMessage').value.trim();
+            const password = document.getElementById('password').value;
+            const imageFile = hideImage.file;
+
+            if (!message) {
+                showAlert('⚠️ Harap masukkan pesan yang ingin disembunyikan!', 'danger');
+                return;
+            }
+
+            if (!hideImage) {
+                showAlert('⚠️ Harap pilih gambar terlebih dahulu!', 'danger');
+                return;
+            }
+
+            // Show loading
+            showLoading(true);
+            
+            // Create form data
+            const formData = new FormData();
+            formData.append('image', imageFile);
+            formData.append('message', message);
+            if (password) {
+                formData.append('password', password);
+            }
+            
+            // Send to server
+            fetch('/hide', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                showLoading(false);
+                
+                if (data.success) {
+                    // Create result with downloadable image
+                    const stegoImageSrc = `data:image/png;base64,${data.stego_image}`;
+                    
+                    const resultHTML = `
+                        <div class="result-section">
+                            <h3><i class="fas fa-check-circle"></i> Pesan Berhasil Disembunyikan!</h3>
+                            
+                            <div class="image-comparison">
+                                <div class="image-preview">
+                                    <h4><i class="fas fa-image"></i> Gambar Asli</h4>
+                                    <img src="${hideImage.data}" alt="Original Image">
+                                </div>
+                                <div class="image-preview">
+                                    <h4><i class="fas fa-eye-slash"></i> Gambar dengan Pesan Tersembunyi</h4>
+                                    <img src="${stegoImageSrc}" alt="Image with Hidden Message">
+                                    <button onclick="downloadImage('${stegoImageSrc}', 'stego_image.png')" class="download-btn">
+                                        <i class="fas fa-download"></i> Unduh Gambar
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div class="stats-grid">
+                                <div class="stat-card">
+                                    <div class="stat-value">${message.length}</div>
+                                    <div class="stat-label">Karakter Tersembunyi</div>
+                                </div>
+                                <div class="stat-card">
+                                    <div class="stat-value">${(message.length / 1024).toFixed(2)} KB</div>
+                                    <div class="stat-label">Ukuran Pesan</div>
+                                </div>
+                                <div class="stat-card">
+                                    <div class="stat-value">${data.original_width}×${data.original_height}</div>
+                                    <div class="stat-label">Resolusi Gambar</div>
+                                </div>
+                            </div>
+                            
+                            <div class="algorithm-info">
+                                <h4><i class="fas fa-microscope"></i> Analisis Bit LSB</h4>
+                                
+                                <div class="image-comparison">
+                                    <div class="image-preview">
+                                        <h4><i class="fas fa-image"></i> Bit LSB Gambar Asli</h4>
+                                        <img src="data:image/png;base64,${data.original_lsb}" alt="Original LSB">
+                                        <p>Visualisasi bit LSB: putih = 1, hitam = 0</p>
+                                    </div>
+                                    <div class="image-preview">
+                                        <h4><i class="fas fa-eye-slash"></i> Bit LSB Gambar Stego</h4>
+                                        <img src="data:image/png;base64,${data.stego_lsb}" alt="Stego LSB">
+                                        <p>Bit LSB berisi pesan rahasia</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="message-result">
+                                    <h4><i class="fas fa-table"></i> Contoh Perubahan Bit pada Pixel (Channel R)</h4>
+                                    <table style="width:100%; border-collapse: collapse; margin-top: 20px;">
+                                        <thead>
+                                            <tr style="background: #4361ee; color: white;">
+                                                <th style="padding: 12px; text-align: left;">Pixel</th>
+                                                <th style="padding: 12px; text-align: left;">Nilai Asli (biner)</th>
+                                                <th style="padding: 12px; text-align: left;">Bit Pesan</th>
+                                                <th style="padding: 12px; text-align: left;">Nilai Setelah LSB (biner)</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            ${data.pixel_examples.map(pixel => `
+                                                <tr style="border-bottom: 1px solid #e2e8f0;">
+                                                    <td style="padding: 12px;">${pixel.pixel_index}</td>
+                                                    <td style="padding: 12px; font-family: monospace;">${pixel.original_bin}</td>
+                                                    <td style="padding: 12px; text-align: center;">${pixel.message_bit}</td>
+                                                    <td style="padding: 12px; font-family: monospace;">${pixel.stego_bin}</td>
+                                                </tr>
+                                            `).join('')}
+                                        </tbody>
+                                    </table>
+                                    <p style="margin-top: 15px; color: #64748b;">
+                                        <strong>Keterangan:</strong> Teknik LSB hanya mengubah bit terakhir (paling kanan) 
+                                        dari setiap nilai pixel. Perubahan ini tidak terlihat oleh mata manusia.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    
+                    document.getElementById('results').innerHTML = resultHTML;
+
+            
+                    
+                    // Scroll to results
+                    document.getElementById('results').scrollIntoView({ behavior: 'smooth' });
+                } else {
+                    showAlert(`⚠️ ${data.error}`, 'danger');
+                }
+            })
+            .catch(error => {
+                showLoading(false);
+                showAlert('⚠️ Terjadi kesalahan saat memproses gambar', 'danger');
+                console.error('Error:', error);
+            });
+        }
+
+
+
+
+
+        function extractMessage() {
+            const password = document.getElementById('extractPassword').value;
+            const imageFile = extractImage.file;
+
+            if (!extractImage) {
+                showAlert('⚠️ Harap pilih gambar terlebih dahulu!', 'danger');
+                return;
+            }
+
+            // Show loading
+            showLoading(true);
+            
+            // Create form data
+            const formData = new FormData();
+            formData.append('image', imageFile);
+            if (password) {
+                formData.append('password', password);
+            }
+            
+            // Send to server
+            fetch('/extract', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                showLoading(false);
+                
+                if (data.success) {
+                    const extractedMessage = data.message;
+                    
+                    let messageDisplay = extractedMessage;
+                    let messageStatus = "success";
+                    let statusIcon = "fas fa-check-circle";
+                    let statusText = "Pesan Berhasil Ditemukan!";
+                    
+                    // Check for decryption errors
+                    if (extractedMessage.includes("Gagal mendekripsi pesan")) {
+                        messageStatus = "warning";
+                        statusIcon = "fas fa-exclamation-triangle";
+                        statusText = "Ada Masalah dengan Dekripsi";
+                    }
+                    // Check for no message found
+                    else if (extractedMessage.includes("Tidak ditemukan pesan")) {
+                        messageStatus = "warning";
+                        statusIcon = "fas fa-search";
+                        statusText = "Pesan Tidak Ditemukan";
+                    }
+                    
+                    const resultHTML = `
+                        <div class="result-section">
+                            <h3><i class="${statusIcon}"></i> ${statusText}</h3>
+                            
+                            <div class="image-preview">
+                                <h4><i class="fas fa-image"></i> Gambar yang Diproses</h4>
+                                <img src="${extractImage.data}" alt="Processed Image">
+                            </div>
+                            
+                            <div class="message-result">
+                                <h4><i class="fas fa-comment"></i> Pesan Rahasia:</h4>
+                                <p>${messageDisplay}</p>
+                            </div>
+                            
+                            <div class="stats-grid">
+                                <div class="stat-card">
+                                    <div class="stat-value">${extractedMessage.length}</div>
+                                    <div class="stat-label">Karakter Ditemukan</div>
+                                </div>
+                                <div class="stat-card">
+                                    <div class="stat-value">${(extractedMessage.length / 1024).toFixed(2)} KB</div>
+                                    <div class="stat-label">Ukuran Pesan</div>
+                                </div>
+                            </div>
+                            
+                            ${messageStatus === "warning" ? `
+                            <div class="alert alert-warning">
+                                <i class="fas fa-exclamation-circle"></i>
+                                <div>
+                                    <strong>Perhatian:</strong> ${extractedMessage.includes("Gagal mendekripsi") ? 
+                                        "Password mungkin salah atau gambar tidak dienkripsi" : 
+                                        "Gambar mungkin tidak mengandung pesan atau menggunakan metode yang berbeda"}
+                                </div>
+                            </div>
+                            ` : ''}
+                        </div>
+                    `;
+                    
+                    document.getElementById('results').innerHTML = resultHTML;
+                    
+                    // Scroll to results
+                    document.getElementById('results').scrollIntoView({ behavior: 'smooth' });
+                } else {
+                    showAlert(`⚠️ ${data.error}`, 'danger');
+                }
+            })
+            .catch(error => {
+                showLoading(false);
+                showAlert('⚠️ Terjadi kesalahan saat mengekstrak pesan', 'danger');
+                console.error('Error:', error);
+            });
+        }
+
+        function downloadImage(src, filename) {
+            const link = document.createElement('a');
+            link.href = src;
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        function showAlert(message, type) {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type}`;
+            alertDiv.innerHTML = `
+                <i class="fas fa-${type === 'danger' ? 'exclamation-triangle' : 'check-circle'}"></i>
+                <div>${message}</div>
+            `;
+            
+            const resultsDiv = document.getElementById('results');
+            if (resultsDiv.firstChild) {
+                resultsDiv.insertBefore(alertDiv, resultsDiv.firstChild);
+            } else {
+                resultsDiv.appendChild(alertDiv);
+            }
+            
+            // Remove alert after 5 seconds
+            setTimeout(() => {
+                alertDiv.style.opacity = '0';
+                setTimeout(() => {
+                    alertDiv.remove();
+                }, 300);
+            }, 5000);
+        }
+
+        function showLoading(show) {
+            document.getElementById('loading').style.display = show ? 'block' : 'none';
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add event listener to prevent default drag behaviors
+            document.addEventListener('dragover', function(e) {
+                e.preventDefault();
+            }, false);
+            
+            document.addEventListener('drop', function(e) {
+                e.preventDefault();
+            }, false);
+            
+            // Add animation to header
+            setTimeout(() => {
+                document.querySelector('.header').style.opacity = '1';
+                document.querySelector('.header').style.transform = 'translateY(0)';
+            }, 100);
+        });
+    </script>
+</body>
+</html>
