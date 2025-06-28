@@ -1085,10 +1085,23 @@
                                     <div class="stat-value">${data.original_width}×${data.original_height}</div>
                                     <div class="stat-label">Resolusi Gambar</div>
                                 </div>
+                                <div class="stat-card">
+                                    <div class="stat-value">${data.psnr.toFixed(2)} dB</div>
+                                    <div class="stat-label">PSNR (Kualitas)</div>
+                                </div>
                             </div>
                             
                             <div class="algorithm-info">
                                 <h4><i class="fas fa-microscope"></i> Analisis Bit LSB</h4>
+                                
+                                <div class="alert alert-warning">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                    <div>
+                                        <strong>Perhatian:</strong> Visualisasi LSB hanya efektif untuk gambar dengan kontras tinggi.
+                                        Untuk gambar dengan kontras rendah, pola LSB mungkin tidak terlihat jelas.
+                                        Nilai PSNR di atas 40 dB umumnya menunjukkan kualitas yang baik (perubahan tidak terlihat mata).
+                                    </div>
+                                </div>
                                 
                                 <div class="image-comparison">
                                     <div class="image-preview">
@@ -1103,33 +1116,37 @@
                                     </div>
                                 </div>
                                 
-                                <div class="message-result">
-                                    <h4><i class="fas fa-table"></i> Contoh Perubahan Bit pada Pixel (Channel R)</h4>
-                                    <table style="width:100%; border-collapse: collapse; margin-top: 20px;">
-                                        <thead>
-                                            <tr style="background: #4361ee; color: white;">
-                                                <th style="padding: 12px; text-align: left;">Pixel</th>
-                                                <th style="padding: 12px; text-align: left;">Nilai Asli (biner)</th>
-                                                <th style="padding: 12px; text-align: left;">Bit Pesan</th>
-                                                <th style="padding: 12px; text-align: left;">Nilai Setelah LSB (biner)</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            ${data.pixel_examples.map(pixel => `
-                                                <tr style="border-bottom: 1px solid #e2e8f0;">
-                                                    <td style="padding: 12px;">${pixel.pixel_index}</td>
-                                                    <td style="padding: 12px; font-family: monospace;">${pixel.original_bin}</td>
-                                                    <td style="padding: 12px; text-align: center;">${pixel.message_bit}</td>
-                                                    <td style="padding: 12px; font-family: monospace;">${pixel.stego_bin}</td>
+                                <details>
+                                    <summary style="cursor: pointer; padding: 15px; background: rgba(67, 97, 238, 0.1); border-radius: 10px; margin-top: 20px; font-weight: bold;">
+                                        <i class="fas fa-table"></i> Lihat Contoh Perubahan Bit pada Pixel (Channel R)
+                                    </summary>
+                                    <div class="message-result" style="margin-top: 15px;">
+                                        <table style="width:100%; border-collapse: collapse; margin-top: 10px;">
+                                            <thead>
+                                                <tr style="background: #4361ee; color: white;">
+                                                    <th style="padding: 12px; text-align: left;">Pixel</th>
+                                                    <th style="padding: 12px; text-align: left;">Nilai Asli (biner)</th>
+                                                    <th style="padding: 12px; text-align: left;">Bit Pesan</th>
+                                                    <th style="padding: 12px; text-align: left;">Nilai Setelah LSB (biner)</th>
                                                 </tr>
-                                            `).join('')}
-                                        </tbody>
-                                    </table>
-                                    <p style="margin-top: 15px; color: #64748b;">
-                                        <strong>Keterangan:</strong> Teknik LSB hanya mengubah bit terakhir (paling kanan) 
-                                        dari setiap nilai pixel. Perubahan ini tidak terlihat oleh mata manusia.
-                                    </p>
-                                </div>
+                                            </thead>
+                                            <tbody>
+                                                ${data.pixel_examples.map(pixel => `
+                                                    <tr style="border-bottom: 1px solid #e2e8f0;">
+                                                        <td style="padding: 12px;">${pixel.pixel_index}</td>
+                                                        <td style="padding: 12px; font-family: monospace;">${pixel.original_bin}</td>
+                                                        <td style="padding: 12px; text-align: center;">${pixel.message_bit}</td>
+                                                        <td style="padding: 12px; font-family: monospace;">${pixel.stego_bin}</td>
+                                                    </tr>
+                                                `).join('')}
+                                            </tbody>
+                                        </table>
+                                        <p style="margin-top: 15px; color: #64748b;">
+                                            <strong>Keterangan:</strong> Teknik LSB hanya mengubah bit terakhir (paling kanan) 
+                                            dari setiap nilai pixel. Perubahan ini tidak terlihat oleh mata manusia.
+                                        </p>
+                                    </div>
+                                </details>
                             </div>
                         </div>
                     `;
