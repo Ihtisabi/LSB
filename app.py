@@ -7,6 +7,7 @@ from Crypto.Cipher import AES
 from Crypto.Util.Padding import pad, unpad
 import os
 import base64
+import math
 
 app = Flask(__name__)
 
@@ -88,6 +89,21 @@ def visualize_lsb(image):
     lsb_visual = (img_array & 1) * 255
     return Image.fromarray(lsb_visual.astype(np.uint8))
 
+def calculate_psnr(original, stego):
+    # Convert images to numpy arrays
+    original_arr = np.array(original).astype(np.float64)
+    stego_arr = np.array(stego).astype(np.float64)
+    
+    # Calculate MSE (Mean Squared Error)
+    mse = np.mean((original_arr - stego_arr) ** 2)
+    
+    if mse == 0:
+        return float('inf')
+    
+    max_pixel = 255.0
+    psnr = 20 * math.log10(max_pixel / math.sqrt(mse))
+    return psnr
+
 @app.route('/')
 def index():
     return render_template('index.html')
@@ -107,6 +123,8 @@ def hide():
         
         # Hide message
         stego_image = hide_message(image, message, password)
+
+        psnr_value = calculate_psnr(image, stego_image)
         
         # Save to byte stream
         img_byte_arr = io.BytesIO()
@@ -161,7 +179,8 @@ def hide():
             'message_length': len(message),
             'original_lsb': image_to_base64(original_lsb),
             'stego_lsb': image_to_base64(stego_lsb),
-            'pixel_examples': pixel_examples
+            'pixel_examples': pixel_examples,
+            'psnr': psnr_value
         })
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 400
